@@ -49,10 +49,7 @@ class NumpyInterface(object):
 
     @staticmethod
     def as_int(val):
-        if isinstance(val, np.ndarray):
-            return val.astype(int)
-        else:
-            return int(val)
+        return val.astype(int) if isinstance(val, np.ndarray) else int(val)
 
     @staticmethod
     def expand_dims(val, axis):
@@ -94,18 +91,15 @@ class NumpyInterface(object):
 
     @staticmethod
     def clip(val, low, high):
-        clipped = np.clip(val, low, high)
-        return clipped
+        return np.clip(val, low, high)
 
     @staticmethod
     def greater(val1, val2):
-        clipped = np.greater(val1, val2)
-        return clipped
+        return np.greater(val1, val2)
 
     @staticmethod
     def sign(val):
-        result = np.sign(val)
-        return result
+        return np.sign(val)
 
     @staticmethod
     def maximum(val1, val2):
@@ -143,15 +137,18 @@ class NumpyInterface(object):
     def kullback_leibler_divergence(y_true, y_pred):
         y_true = NumpyInterface.clip(y_true, NumpyInterface.epsilon(), 1.0)
         y_pred = NumpyInterface.clip(y_pred, NumpyInterface.epsilon(), 1.0)
-        ret_val = NumpyInterface.sum(y_true * NumpyInterface.log(y_true / y_pred), axis=-1)
-        return ret_val
+        return NumpyInterface.sum(
+            y_true * NumpyInterface.log(y_true / y_pred), axis=-1
+        )
 
     @staticmethod
     def binary_crossentropy(y_true, y_pred):
         y_true = y_true[..., -1]
         y_pred = y_pred[..., -1]
-        values = -(y_true * np.log(y_pred + np.finfo(float).eps) + (1-y_true)*np.log(1 - y_pred + np.finfo(float).eps))
-        return values
+        return -(
+            y_true * np.log(y_pred + np.finfo(float).eps)
+            + (1 - y_true) * np.log(1 - y_pred + np.finfo(float).eps)
+        )
 
     @staticmethod
     def constant(value):

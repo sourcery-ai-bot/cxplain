@@ -27,11 +27,10 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 class TestUtil(object):
     @staticmethod
     def get_classification_models():
-        models = [
+        return [
             LogisticRegression(random_state=1),
             RandomForestClassifier(n_estimators=64, max_depth=5, random_state=1),
         ]
-        return models
 
     @staticmethod
     def fit_proxy(explained_model, x, y):
@@ -69,7 +68,7 @@ class TestUtil(object):
 
     @staticmethod
     def get_boston_housing_feature_names():
-        feature_names = [
+        return [
             "CRIM - per capita crime rate by town",
             "ZN - proportion of residential land zoned for lots over 25,000 sq.ft.",
             "INDUS - proportion of non-retail business acres per town.",
@@ -83,9 +82,8 @@ class TestUtil(object):
             "PTRATIO - pupil-teacher ratio by town",
             "B - 1000(Bk - 0.63)^2 where Bk is the proportion of blacks by town",
             "LSTAT - % lower status of the population",
-            "MEDV - Median value of owner-occupied homes in $1000's"
+            "MEDV - Median value of owner-occupied homes in $1000's",
         ]
-        return feature_names
 
     @staticmethod
     def get_imdb(word_dictionary_size=1024, num_subsamples=None):
@@ -114,8 +112,7 @@ class TestUtil(object):
         word_to_id["<UNK>"] = 2
         word_to_id["<UNUSED>"] = 3
 
-        id_to_word = {value: key for key, value in word_to_id.items()}
-        return id_to_word
+        return {value: key for key, value in word_to_id.items()}
 
     @staticmethod
     def imdb_dictionary_indidces_to_words(indices, index_from=3):
@@ -226,10 +223,7 @@ class TestUtil(object):
         def replace_none_with_random(the_shape):
             out_shape = []
             for dim in the_shape:
-                if dim is None:
-                    out_shape += [np.random.randint(0, max_variable_len)]
-                else:
-                    out_shape += [dim]
+                out_shape += [np.random.randint(0, max_variable_len)] if dim is None else [dim]
             return tuple(out_shape)
 
         x = [np.random.randint(0, max_value, size=replace_none_with_random(shape)) for _ in range(num_samples)]
@@ -256,10 +250,7 @@ class TestUtil(object):
         def replace_none_with_fixed(the_shape):
             out_shape = []
             for dim in the_shape:
-                if dim is None:
-                    out_shape += [fixed_length]
-                else:
-                    out_shape += [dim]
+                out_shape += [fixed_length] if dim is None else [dim]
             return tuple(out_shape)
 
         x = np.array([np.random.normal(0, std_dev, size=replace_none_with_fixed(shape)) for _ in range(num_samples)])

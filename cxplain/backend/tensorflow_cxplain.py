@@ -191,8 +191,7 @@ class TensorflowCXPlain(CXPlain):
                                  "using __get_last_fit_score__.")
 
         best_idx = np.argmin(self.last_history.history["val_loss"])
-        ret_val = {k: v[best_idx] for k, v in self.last_history.history.items()}
-        return ret_val
+        return {k: v[best_idx] for k, v in self.last_history.history.items()}
 
     def _predict_single(self, model, X):
         return self.model_builder.predict(model, X)
@@ -239,11 +238,14 @@ class TensorflowCXPlain(CXPlain):
 
         self.last_masked_data = masked_data
 
-        if self.num_models == 1:
-            return_value = self._score_single(self.model, masked_data, y, sample_weight)
-        else:
-            return_value = [self._score_single(model, masked_data, y, sample_weight) for model in self.model]
-        return return_value
+        return (
+            self._score_single(self.model, masked_data, y, sample_weight)
+            if self.num_models == 1
+            else [
+                self._score_single(model, masked_data, y, sample_weight)
+                for model in self.model
+            ]
+        )
 
     def save(self, directory_path, overwrite=False, custom_model_saver=PickleModelSerialiser()):
         """
@@ -282,9 +284,8 @@ class TensorflowCXPlain(CXPlain):
         config_file_path = os.path.join(directory_path, config_file_name)
         if os.path.exists(config_file_path) and not overwrite:
             raise ValueError(already_exists_exception_message.format(config_file_path))
-        else:
-            with open(config_file_path, "w") as fp:
-                json.dump(self.get_config(directory_path, custom_model_saver), fp)
+        with open(config_file_path, "w") as fp:
+            json.dump(self.get_config(directory_path, custom_model_saver), fp)
 
         if self.prediction_model is not None:
             tensorflow_serialiser = TensorFlowModelSerialiser()
@@ -326,23 +327,20 @@ class TensorflowCXPlain(CXPlain):
         model_builder_path = os.path.join(directory_path, CXPlain.get_model_builder_pkl_file_name())
         if os.path.exists(model_builder_path) and not overwrite:
             raise ValueError(already_exists_exception_message.format(model_builder_path))
-        else:
-            with open(model_builder_path, "wb") as fp:
-                pickle.dump(self.model_builder, fp)
+        with open(model_builder_path, "wb") as fp:
+            pickle.dump(self.model_builder, fp)
 
         masking_path = os.path.join(directory_path, CXPlain.get_masking_operation_pkl_file_name())
         if os.path.exists(masking_path) and not overwrite:
             raise ValueError(already_exists_exception_message.format(masking_path))
-        else:
-            with open(masking_path, "wb") as fp:
-                pickle.dump(self.masking_operation, fp)
+        with open(masking_path, "wb") as fp:
+            pickle.dump(self.masking_operation, fp)
 
         loss_path = os.path.join(directory_path, CXPlain.get_loss_pkl_file_name())
         if os.path.exists(loss_path) and not overwrite:
             raise ValueError(already_exists_exception_message.format(loss_path))
-        else:
-            with open(loss_path, "wb") as fp:
-                pickle.dump(self.loss, fp)
+        with open(loss_path, "wb") as fp:
+            pickle.dump(self.loss, fp)
 
     @staticmethod
     def load(directory_path, custom_model_loader=PickleModelSerialiser()):

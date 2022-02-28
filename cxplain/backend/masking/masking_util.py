@@ -42,11 +42,7 @@ class MaskingUtil(object):
             num_indices, steps = MaskingUtil.get_num_indices(image_shape, downsample_factors)
         else:
             has_variable_dimension = np.any(list(map(lambda x: x is None, image_shape)))
-            if has_variable_dimension:
-                num_indices = None
-            else:
-                num_indices = int(np.prod(image_shape))
-
+            num_indices = None if has_variable_dimension else int(np.prod(image_shape))
             steps = image_shape
         return num_indices, num_channels, steps, downsampling_factor
 
@@ -66,13 +62,12 @@ class MaskingUtil(object):
 
         if len(downsample_factors) == 1:
             return (downsample_factors[0],)*expected_length
-        else:
-            if len(downsample_factors) != expected_length:
-                raise ValueError(
-                    "Dimension missmatch - downsample factors shoud match the dimension of the input data."
-                    "Expected length: " + str(expected_length) + ", found: " + str(len(downsample_factors)) + "."
-                )
-            return downsample_factors
+        if len(downsample_factors) != expected_length:
+            raise ValueError(
+                "Dimension missmatch - downsample factors shoud match the dimension of the input data."
+                "Expected length: " + str(expected_length) + ", found: " + str(len(downsample_factors)) + "."
+            )
+        return downsample_factors
 
     @staticmethod
     def get_ith_mask1d(i, image_shape, downsample_factors, math_ops=NumpyInterface):
@@ -137,19 +132,18 @@ class MaskingUtil(object):
 
     @staticmethod
     def predict_proxy(model, x):
-        if hasattr(model, "predict_proba"):
-            result = model.predict_proba(x)
-
-            # TODO: Handle multi-class outputs
-            if isinstance(result, list) and len(result) == 2:
-                result = result[-1]
-
-                assert np.allclose(np.argmax(result, axis=-1),
-                                   np.argmax(model.predict(x), axis=-1),
-                                   rtol=0, atol=0)
-            return result
-        else:
+        if not hasattr(model, "predict_proba"):
             return model.predict(x)
+        result = model.predict_proba(x)
+
+        # TODO: Handle multi-class outputs
+        if isinstance(result, list) and len(result) == 2:
+            result = result[-1]
+
+            assert np.allclose(np.argmax(result, axis=-1),
+                               np.argmax(model.predict(x), axis=-1),
+                               rtol=0, atol=0)
+        return result
 
     @staticmethod
     def get_x_imputed(x, downsample_factors, math_ops):

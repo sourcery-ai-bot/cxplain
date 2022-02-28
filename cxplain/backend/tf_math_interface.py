@@ -85,18 +85,15 @@ class TensorflowInterface(object):
 
     @staticmethod
     def clip(val, low, high):
-        clipped = tf.clip_by_value(val, low, high)
-        return clipped
+        return tf.clip_by_value(val, low, high)
 
     @staticmethod
     def greater(val1, val2):
-        clipped = tf.greater(val1, val2)
-        return clipped
+        return tf.greater(val1, val2)
 
     @staticmethod
     def sign(val):
-        result = tf.sign(val)
-        return result
+        return tf.sign(val)
 
     @staticmethod
     def maximum(val1, val2):

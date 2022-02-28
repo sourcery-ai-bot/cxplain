@@ -28,12 +28,10 @@ class CountVectoriser(BaseEstimator):
         return self
 
     def fit_transform(self, raw_documents, y=None):
-        x = self.transform(raw_documents)
-        return x
+        return self.transform(raw_documents)
 
     def transform(self, raw_documents):
-        x = CountVectoriser.to_counts(self.num_words, raw_documents)
-        return x
+        return CountVectoriser.to_counts(self.num_words, raw_documents)
 
     @staticmethod
     def to_counts(num_words, data):

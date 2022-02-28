@@ -188,15 +188,10 @@ class BaseModelBuilder(object):
         return history
 
     def evaluate(self, model, X, y, sample_weight=None):
-        # We must feed two extra outputs due to a bug in TensorFlow < 1.15.0rc0 that would not
-        # allow saving models without connecting all inputs to output nodes.
-        # See https://github.com/tensorflow/tensorflow/pull/30244
-        return_value = model.evaluate(x=X,
+        return model.evaluate(x=X,
                                       y=[y, y, y],
                                       sample_weight=sample_weight,
                                       verbose=self.verbose)
-        return return_value
 
     def predict(self, model, X):
-        return_value = model.predict(X)
-        return return_value
+        return model.predict(X)

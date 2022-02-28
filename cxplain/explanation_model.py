@@ -59,12 +59,12 @@ class CXPlain(BaseEstimator):
 
     @staticmethod
     def get_explained_model_file_name(file_extension):
-        return "cxplain_explained_model" + file_extension
+        return f"cxplain_explained_model{file_extension}"
 
     @staticmethod
     def get_model_h5_name_with_base_name(base_name, index):
         if index is None:
-            return base_name + ".h5"
+            return f'{base_name}.h5'
         else:
             return base_name + "_{}.h5".format(index)
 
@@ -81,25 +81,30 @@ class CXPlain(BaseEstimator):
     def get_config(self, directory, model_serialiser):
         if self.prediction_model is None:
             prediction_model = None
+        elif self.num_models == 1:
+            prediction_model = os.path.join(directory, CXPlain.get_prediction_model_h5_file_name())
         else:
-            if self.num_models == 1:
-                prediction_model = os.path.join(directory, CXPlain.get_prediction_model_h5_file_name())
-            else:
-                prediction_model = [os.path.join(directory, CXPlain.get_prediction_model_h5_file_name(i))
-                                    for i in range(self.num_models)]
+            prediction_model = [os.path.join(directory, CXPlain.get_prediction_model_h5_file_name(i))
+                                for i in range(self.num_models)]
 
-        config = {
-            "model_builder": os.path.join(directory, CXPlain.get_model_builder_pkl_file_name()),
-            "masking_operation": os.path.join(directory, CXPlain.get_masking_operation_pkl_file_name()),
+        return {
+            "model_builder": os.path.join(
+                directory, CXPlain.get_model_builder_pkl_file_name()
+            ),
+            "masking_operation": os.path.join(
+                directory, CXPlain.get_masking_operation_pkl_file_name()
+            ),
             "loss": os.path.join(directory, CXPlain.get_loss_pkl_file_name()),
             "downsample_factors": self.downsample_factors,
             "num_models": self.num_models,
             "prediction_model": prediction_model,
-            "explained_model": os.path.join(directory, CXPlain.get_explained_model_file_name(
-                model_serialiser.get_file_extension())
+            "explained_model": os.path.join(
+                directory,
+                CXPlain.get_explained_model_file_name(
+                    model_serialiser.get_file_extension()
+                ),
             ),
         }
-        return config
 
     def get_masked_data(self):
         return self.last_masked_data

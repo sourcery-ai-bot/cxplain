@@ -142,7 +142,7 @@ class TestExplanationModel(unittest.TestCase):
         loss = categorical_crossentropy
 
         downsample_factors = [(2, 2), (4, 4), (4, 7), (7, 4), (7, 7)]
-        with_bns = [True if i % 2 == 0 else False for i in range(len(downsample_factors))]
+        with_bns = [i % 2 == 0 for i in range(len(downsample_factors))]
         for downsample_factor, with_bn in zip(downsample_factors, with_bns):
             model_builder = UNetModelBuilder(downsample_factor, num_layers=2, num_units=64, activation="relu",
                                              p_dropout=0.2, verbose=0, batch_size=256, learning_rate=0.001,
@@ -177,7 +177,7 @@ class TestExplanationModel(unittest.TestCase):
         loss = categorical_crossentropy
 
         downsample_factors = [(2, 2), (4, 4), (4, 7), (7, 4), (7, 7)]
-        with_bns = [True if i % 2 == 0 else False for i in range(len(downsample_factors))]
+        with_bns = [i % 2 == 0 for i in range(len(downsample_factors))]
         for downsample_factor, with_bn in zip(downsample_factors, with_bns):
             model_builder = UNetModelBuilder(downsample_factor, num_layers=2, num_units=64, activation="relu",
                                              p_dropout=0.2, verbose=0, batch_size=256, learning_rate=0.001,

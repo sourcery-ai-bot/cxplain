@@ -34,8 +34,7 @@ class Validation(object):
     def flatten(arr):
         for x in arr:
             if isinstance(x, collections.Iterable) and not isinstance(x, (str, bytes)):
-                for sub_x in Validation.flatten(x):
-                    yield sub_x
+                yield from Validation.flatten(x)
             else:
                 yield x
 
@@ -66,7 +65,7 @@ class Validation(object):
 
     @staticmethod
     def check_is_fraction(value, var_name="value"):
-        if not (value <= 1.0 and value >= 0.0):
+        if value > 1.0 or value < 0.0:
             raise ValueError("__{}__ must be between 0.0 and 1.0 (inclusive). Found: {}.".format(var_name, value))
 
     @staticmethod
@@ -98,10 +97,7 @@ class Validation(object):
         while len(probe_dims) > 1 and \
               (probe_dims[0] == 0 or isinstance(probe[0], collections.Sequence) or isinstance(probe[0], np.ndarray)):
             is_fixed_size = np.all(list(Validation.flatten(Validation.get_at_level(len(probe), X, level))))
-            if is_fixed_size:
-                input_dim += [len(probe)]
-            else:
-                input_dim += [None]
+            input_dim += [len(probe)] if is_fixed_size else [None]
             level += 1
             probe = probe[0]
             probe_dims = np.array(probe).shape
@@ -117,17 +113,15 @@ class Validation(object):
 
         # Must be (num_samples,) for regression and (num_samples, num_classes) for classification
         # NOTE: binary classification must be (num_samples, 2) to differentiate from regression.
-        is_array = isinstance(y[0], collections.Sequence) or isinstance(y[0], np.ndarray)
-        output_dim = len(y[0]) if is_array else 1
-        return output_dim
+        is_array = isinstance(y[0], (collections.Sequence, np.ndarray))
+        return len(y[0]) if is_array else 1
 
     @staticmethod
     def get_full_input_shape(num_samples, input_dim):
         if not isinstance(input_dim, collections.Sequence):
             input_dim = (input_dim,)
 
-        full_shape = (num_samples,) + input_dim
-        return full_shape
+        return (num_samples,) + input_dim
 
     @staticmethod
     def get_attribution_shape(X):
@@ -136,8 +130,9 @@ class Validation(object):
         # (n, x, y, c)    -> (n, x, y, 1)
         # (n, x, y, z, c) -> (n, x, y, z, 1)
         num_samples, input_dim = Validation.get_input_dimension(X)
-        ret_val = Validation.get_attribution_shape_from_input_shape(num_samples, input_dim)
-        return ret_val
+        return Validation.get_attribution_shape_from_input_shape(
+            num_samples, input_dim
+        )
 
     @staticmethod
     def get_attribution_shape_from_input_shape(num_samples, input_dim):
@@ -151,7 +146,13 @@ class Validation(object):
 
     @staticmethod
     def is_variable_length(x):
-        is_var_len = (isinstance(x, np.ndarray) and len(x) > 0 and len(x.shape) == 1 and len(x[0]) > 1) or \
-                     (isinstance(x, list) and len(x) > 0 and
-                      not np.allclose(list(map(len, x)), len(x[0]), rtol=0, atol=0))
-        return is_var_len
+        return (
+            isinstance(x, np.ndarray)
+            and len(x) > 0
+            and len(x.shape) == 1
+            and len(x[0]) > 1
+        ) or (
+            isinstance(x, list)
+            and len(x) > 0
+            and not np.allclose(list(map(len, x)), len(x[0]), rtol=0, atol=0)
+        )

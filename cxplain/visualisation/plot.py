@@ -41,8 +41,7 @@ class Plot(object):
     @staticmethod
     def get_custom_cmap(color_vals):
         import matplotlib
-        custom_cmap = matplotlib.colors.ListedColormap(color_vals)
-        return custom_cmap
+        return matplotlib.colors.ListedColormap(color_vals)
 
     @staticmethod
     def check_plot_input(x, attribution, confidence=None):
@@ -125,10 +124,7 @@ class Plot(object):
             x = np.squeeze(x, axis=-1)
 
         def squeeze_if_channel_dim_equals_1(original):
-            if original.shape[-1] == 1:
-                return np.squeeze(original, axis=-1)
-            else:
-                return original
+            return np.squeeze(original, axis=-1) if original.shape[-1] == 1 else original
 
         attribution = squeeze_if_channel_dim_equals_1(attribution)
 
@@ -196,9 +192,19 @@ class Plot(object):
             preamble = r'\usepackage{xcolor}\definecolor{attentioncolor}{rgb}{' + \
                        '{:.3f}, {:.3f}, {:.3f}'.format(*highlight_color) + r'} \n'
             a_frac = lambda a_cur: int(np.rint(a_cur / max_a * 50))
-            sentence = preamble + ''.join(['\colorbox{{attentioncolor!{:d}}}{{ {:s} }}'.format(a_frac(a_cur), word)
-                                           for word, a_cur in zip(words, attributions)])
-        else:
-            sentence = ''.join(['{:s} {{{:}}} '.format(word, a_cur) for word, a_cur in zip(words, attributions)])
+            return preamble + ''.join(
+                [
+                    '\colorbox{{attentioncolor!{:d}}}{{ {:s} }}'.format(
+                        a_frac(a_cur), word
+                    )
+                    for word, a_cur in zip(words, attributions)
+                ]
+            )
 
-        return sentence
+        else:
+            return ''.join(
+                [
+                    '{:s} {{{:}}} '.format(word, a_cur)
+                    for word, a_cur in zip(words, attributions)
+                ]
+            )
